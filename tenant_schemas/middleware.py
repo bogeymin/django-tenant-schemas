@@ -27,8 +27,14 @@ class TenantMiddleware(object):
         hostname_without_port = remove_www_and_dev(request.get_host().split(':')[0])
 
         TenantModel = get_tenant_model()
-        request.tenant = get_object_or_404(TenantModel, domain_url=hostname_without_port)
+        try:
+            request.tenant = TenantModel.objects.get(domain_url=hostname_without_port)
+        except TenantModel.DoesNotExist:
+            request.tenant = TenantModel.objects.get(domain_aliases__contains=hostname_without_port)
+        except TenantModel.DoesNotExist:
+            raise Http404("No %s matches the given query." % TenantModel)
         connection.set_tenant(request.tenant)
+
 
         # do we have tenant-specific URLs?
         if hasattr(settings, 'PUBLIC_SCHEMA_URL_TOKEN') and request.tenant.schema_name == "public" and request.path_info[-1] == '/':

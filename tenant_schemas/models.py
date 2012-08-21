@@ -9,6 +9,7 @@ class TenantMixin(models.Model):
                               # you dont want the schema to be automatically
                               # created upon save.
 
+    domain_aliases = models.TextField(blank=True, null=True)
     domain_url = models.CharField(max_length=128, unique=True)
     schema_name = models.CharField(max_length=63)
 
